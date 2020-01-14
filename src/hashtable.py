@@ -13,6 +13,7 @@ class HashTable:
     that accepts string keys
     '''
     def __init__(self, capacity):
+        self.count = 0
         self.capacity = capacity  # Number of buckets in the hash table
         self.storage = [None] * capacity
 
@@ -51,8 +52,11 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
-
+        if self.count >= self.capacity:
+            self.resize()
+        self.count += 1
+        hashed_key = self._hash_mod(key)
+        self.storage[hashed_key] = value
 
 
     def remove(self, key):
@@ -63,7 +67,12 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        hashed_key = self._hash_mod(key)
+
+        if 0 <= hashed_key < len(self.storage):
+            del self.storage[hashed_key]
+        else:
+            print('Key does not exist!')
 
 
     def retrieve(self, key):
@@ -74,7 +83,11 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        hashed_key = self._hash_mod(key)
+        if 0 <= hashed_key < len(self.storage):
+            return self.storage[hashed_key]
+        else:
+            return None
 
 
     def resize(self):
@@ -84,7 +97,12 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        self.capacity *= 2
+        new_storage = [None] * self.capacity
+        #something here
+
+        self.storage = new_storage
+
 
 
 

@@ -6,14 +6,15 @@ class LinkedPair:
         self.key = key
         self.value = value
         self.next = None
-
+    def __str__(self):
+        return f'LinkedPair({self.key}, {self.value})'
+    __repr__ = __str__
 class HashTable:
     '''
     A hash table that with `capacity` buckets
     that accepts string keys
     '''
     def __init__(self, capacity):
-        self.count = 0
         self.capacity = capacity  # Number of buckets in the hash table
         self.storage = [None] * capacity
 
@@ -43,8 +44,11 @@ class HashTable:
         '''
         return self._hash(key) % self.capacity
 
-
-    def insert(self, key, value):
+    def _all_linked_pairs(self, linkpair):
+        while linkpair:
+            yield linkpair
+            linkpair = linkpair.next
+    def insert(self, key, value, storage = None):
         '''
         Store the value with the given key.
 
@@ -52,11 +56,20 @@ class HashTable:
 
         Fill this in.
         '''
-        if self.count >= self.capacity:
-            self.resize()
-        self.count += 1
+        # if self.count >= self.capacity:
+        #     self.resize()
+        storage = storage or self.storage
         hashed_key = self._hash_mod(key)
-        self.storage[hashed_key] = value
+        hash_value = LinkedPair(key, value)
+
+        if storage[hashed_key]:
+            for old_hash_value in self._all_linked_pairs(storage[hashed_key]):
+                if old_hash_value.key == key:
+                    old_hash_value.value = value
+                    return
+            storage[hashed_key].next = hash_value
+        else:
+            storage[hashed_key] = hash_value
 
 
     def remove(self, key):
@@ -69,9 +82,20 @@ class HashTable:
         '''
         hashed_key = self._hash_mod(key)
 
-        if 0 <= hashed_key < len(self.storage):
-            del self.storage[hashed_key]
-        else:
+        try:
+            current_node = self.storage[hashed_key]
+            first = True
+            while current_node:
+                if current_node.key == key:
+                    if first:
+                        del self.storage[hashed_key]
+                    else:
+                        previous_node.next = current_node.next
+                else:
+                    previous_node = current_node
+                    current_node = current_node.next
+                first = False
+        except IndexError:
             print('Key does not exist!')
 
 
@@ -84,11 +108,20 @@ class HashTable:
         Fill this in.
         '''
         hashed_key = self._hash_mod(key)
-        if 0 <= hashed_key < len(self.storage):
-            return self.storage[hashed_key]
-        else:
+        try:
+            current_node = self.storage[hashed_key]
+            while current_node:
+                if current_node.key == key:
+                    return current_node.value
+                current_node = current_node.next
+            return current_node
+        except IndexError:
             return None
-
+    def insert_special(self, hash_value, new_storage):
+        if hash_value:
+            self.insert(hash_value.key, hash_value.value, new_storage)
+            if hash_value.next:
+                self.insert_special(hash_value.next, new_storage)
 
     def resize(self):
         '''
@@ -99,8 +132,8 @@ class HashTable:
         '''
         self.capacity *= 2
         new_storage = [None] * self.capacity
-        #something here
-
+        for hash_value in self.storage:
+            self.insert_special(hash_value, new_storage)
         self.storage = new_storage
 
 

@@ -184,6 +184,7 @@ class HashTable:
             while current_pair is not None:
                 self.insert(current_pair.key, current_pair.value)
                 current_pair = current_pair.next
+        
 
 if __name__ == "__main__":
     ht = HashTable(2)
